@@ -1,0 +1,30 @@
+---
+title: "Analysis of Severity of Weather Events in the population"
+output:
+  html_document:
+    keep_md: true
+---
+
+```{r}
+setwd("~/Documents/personal/Coursera/Reproducible.Research/Project/2/")
+bz2_url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+bz2_file = "StormData.csv.bz2"
+csv_file = "StormData.csv"
+
+if (!file.exists(bz2_file)) {
+    message("Compressed data file doesn't exists, downloading")
+    download.file(bz2_url, dest_file=bz2_file, method="curl")
+    message("Download completed")
+}
+data_conn <- bzfile(bz2_file)
+data <- read.csv(data_conn, header=TRUE)
+```
+
+The definition of events is not normalized, and there is a lot of inconsistent records. Let's do some clean-up
+
+```{r data_cleanup}
+library(dplyr)
+source("clean.R")
+people_health_summary <- data %>% group_by(EVTYPE) %>% summarise(injury_count=sum(INJURIES), fatality_count=sum(FATALITIES))
+relevant <- people_health_summary %>% filter(injury_count + fatality_count > 0)
+```
